@@ -5,59 +5,78 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no, viewport-fit=cover">
     <title>极简自律 App</title>
     
-    <meta name="application-name" content="极简自律">
-    <meta name="apple-mobile-web-app-title" content="极简自律">
+    <link rel="manifest" href='data:application/manifest+json,{"name":"极简自律","short_name":"Focus","start_url":".","display":"standalone","background_color":"#ffffff","theme_color":"#000000","icons":[{"src":"https://cdn-icons-png.flaticon.com/512/3587/3587210.png","sizes":"512x512","type":"image/png"}]}'>
     <meta name="mobile-web-app-capable" content="yes">
-    
-    <link rel="manifest" href='data:application/manifest+json,{"name":"极简自律","short_name":"自律","start_url":".","display":"standalone","background_color":"#ffffff","theme_color":"#000000","icons":[{"src":"https://cdn-icons-png.flaticon.com/512/3587/3587210.png","sizes":"512x512","type":"image/png"}]}'>
 
     <style>
         :root { --bg: #ffffff; --main: #000000; --gray: #f2f2f2; }
-        body { background: var(--bg); color: var(--main); font-family: sans-serif; margin: 0; padding: env(safe-area-inset-top) 20px 20px 20px; }
-        .card { background: var(--gray); border-radius: 28px; padding: 25px; margin-bottom: 25px; }
-        h1 { font-size: 38px; font-weight: 900; margin-bottom: 30px; letter-spacing: -1.5px; }
-        label { display: block; font-size: 13px; margin: 10px 0 8px 10px; font-weight: 600; opacity: 0.6; }
-        input { width: 100%; border: 1px solid #ddd; background: #fff; padding: 18px; border-radius: 20px; margin-bottom: 15px; box-sizing: border-box; font-size: 16px; outline: none; }
-        .primary-btn { width: 100%; background: var(--main); color: #fff; border: none; padding: 18px; border-radius: 22px; font-weight: bold; font-size: 18px; cursor: pointer; }
-        .goal-item { border: 2.5px solid var(--main); border-radius: 26px; padding: 20px; margin-bottom: 18px; background: #fff; }
-        .goal-header { display: flex; justify-content: space-between; align-items: center; }
-        .goal-item.done { background: var(--gray); border-color: transparent; opacity: 0.5; }
-        .check-box { width: 34px; height: 34px; border: 2.5px solid var(--main); border-radius: 12px; cursor: pointer; }
+        body { background: var(--bg); color: var(--main); font-family: -apple-system, sans-serif; margin: 0; padding: env(safe-area-inset-top) 20px 40px 20px; }
+        .card { background: var(--gray); border-radius: 30px; padding: 25px; margin-bottom: 25px; box-shadow: 0 10px 30px rgba(0,0,0,0.03); }
+        h1 { font-size: 42px; font-weight: 900; margin-bottom: 30px; letter-spacing: -2px; }
+        label { display: block; font-size: 13px; margin: 10px 0 8px 12px; font-weight: 700; opacity: 0.6; }
+        input { width: 100%; border: none; background: #fff; padding: 18px; border-radius: 20px; margin-bottom: 15px; box-sizing: border-box; font-size: 16px; outline: none; }
+        .primary-btn { width: 100%; background: var(--main); color: #fff; border: none; padding: 20px; border-radius: 22px; font-weight: bold; font-size: 18px; cursor: pointer; }
+        .goal-item { border: 2.5px solid var(--main); border-radius: 28px; padding: 22px; margin-bottom: 18px; background: #fff; }
+        .check-box { width: 36px; height: 36px; border: 2.5px solid var(--main); border-radius: 14px; cursor: pointer; }
         .done .check-box { background: var(--main); position: relative; }
-        .done .check-box::after { content: '✓'; color: #fff; position: absolute; left: 9px; top: 2px; font-size: 22px; }
-        .sync-btn { background: #000; color: #fff; font-size: 12px; padding: 8px 16px; border-radius: 14px; border: none; margin-top: 15px; cursor: pointer; font-weight: 600; }
-        .delete-link { font-size: 13px; color: #ff4d4d; background: none; border: none; margin-top: 20px; cursor: pointer; }
+        .done .check-box::after { content: '✓'; color: #fff; position: absolute; left: 9px; top: 1px; font-size: 24px; }
+        .sync-btn { background: #000; color: #fff; font-size: 12px; padding: 10px 18px; border-radius: 15px; border: none; margin-top: 15px; cursor: pointer; font-weight: 700; }
     </style>
 </head>
 <body>
+
     <h1>Focus.</h1>
+
     <div class="card">
-        <label>目标</label>
+        <label>设定目标</label>
         <input type="text" id="gInput" placeholder="写下你的目标...">
         <label>提醒时间</label>
         <input type="time" id="tInput" value="08:00">
-        <button class="primary-btn" onclick="add()">开启 App 计划</button>
+        <button class="primary-btn" onclick="add()">开启计划并跳转</button>
     </div>
+
     <div id="list"></div>
 
     <script>
-        let goals = JSON.parse(localStorage.getItem('my_real_app_v1')) || [];
+        let goals = JSON.parse(localStorage.getItem('focus_final_v5')) || [];
+
         function add() {
             const title = document.getElementById('gInput').value;
             const time = document.getElementById('tInput').value;
-            if(!title) return alert("写个名字吧");
+            if(!title) return alert("请输入内容");
+            
             goals.push({ id: Date.now(), title, time, doneToday: false, count: 0 });
             save();
+            // 添加完立即触发跳转
             syncToSystem(time, title);
             document.getElementById('gInput').value = '';
         }
+
         function syncToSystem(time, title) {
             const [h, m] = time.split(':');
-            const intent = `intent:#Intent;action=android.intent.action.SET_ALARM;i:android.intent.extra.alarm.HOUR=${parseInt(h)};i:android.intent.extra.alarm.MINUTES=${parseInt(m)};s:android.intent.extra.alarm.MESSAGE=${encodeURIComponent(title)};b:android.intent.extra.alarm.SKIP_UI=false;end`;
-            if (confirm("是否立即同步到闹钟？")) {
-                window.location.href = intent;
-            }
+            const hour = parseInt(h, 10);
+            const minute = parseInt(m, 10);
+
+            // 【核心：经反复检查的 Android 原生闹钟 Intent】
+            const intentUri = `intent:#Intent;action=android.intent.action.SET_ALARM;i:android.intent.extra.alarm.HOUR=${hour};i:android.intent.extra.alarm.MINUTES=${minute};s:android.intent.extra.alarm.MESSAGE=${encodeURIComponent(title)};b:android.intent.extra.alarm.SKIP_UI=false;end`;
+
+            // 1. 模拟真实 A 标签点击（最高优先级触发）
+            const link = document.createElement('a');
+            link.href = intentUri;
+            document.body.appendChild(link);
+            link.click();
+            document.body.removeChild(link);
+
+            // 2. 状态监测补丁：如果 1 秒后页面未被切到后台，说明被系统拦截了
+            setTimeout(() => {
+                if (!document.hidden) {
+                    if (confirm("跳转失败？可能是由于系统权限拦截。\n\n请在『应用信息-权限管理』中开启『后台弹出界面』权限后再试。")) {
+                        window.location.href = intentUri;
+                    }
+                }
+            }, 1000);
         }
+
         function toggle(id) {
             goals = goals.map(g => {
                 if(g.id === id) {
@@ -68,22 +87,20 @@
             });
             save();
         }
-        function del(id) {
-            if(confirm("确定删除？")) { goals = goals.filter(g => g.id !== id); save(); }
-        }
-        function save() { localStorage.setItem('my_real_app_v1', JSON.stringify(goals)); render(); }
+
+        function save() { localStorage.setItem('focus_final_v5', JSON.stringify(goals)); render(); }
+        
         function render() {
             document.getElementById('list').innerHTML = goals.map(g => `
                 <div class="goal-item ${g.doneToday ? 'done' : ''}">
-                    <div class="goal-header">
+                    <div style="display:flex; justify-content:space-between; align-items:center;">
                         <div>
-                            <div style="font-weight:900; font-size:20px;">${g.title}</div>
-                            <div style="font-size:13px; color:#666;">坚持了 ${g.count} 天 • ${g.time}</div>
+                            <div style="font-weight:900; font-size:22px;">${g.title}</div>
+                            <div style="font-size:14px; color:#666; margin-top:4px;">坚持 ${g.count} 天 • ${g.time}</div>
                         </div>
                         <div class="check-box" onclick="toggle(${g.id})"></div>
                     </div>
-                    <button class="sync-btn" onclick="syncToSystem('${g.time}', '${g.title}')">⏰ 同步闹钟</button>
-                    <button class="delete-link" onclick="del(${g.id})">删除</button>
+                    <button class="sync-btn" onclick="syncToSystem('${g.time}', '${g.title}')">⏰ 同步到闹钟</button>
                 </div>
             `).reverse().join('');
         }
