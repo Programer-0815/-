@@ -3,58 +3,48 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no, viewport-fit=cover">
-    <title>Focus Pro 终极版</title>
+    <title>Focus Pro 深度保活版</title>
     <style>
-        :root { --bg: #ffffff; --main: #000000; --gray: #f6f6f6; --red: #ff3b30; --blue: #007aff; --green: #34c759; }
-        body { background: var(--bg); color: var(--main); font-family: -apple-system, sans-serif; margin: 0; padding: 20px; padding-top: calc(env(safe-area-inset-top) + 20px); -webkit-tap-highlight-color: transparent; }
+        :root { --bg: #ffffff; --main: #000000; --red: #ff3b30; --blue: #007aff; }
+        body { background: var(--bg); font-family: -apple-system, sans-serif; margin: 0; padding: 20px; padding-top: calc(env(safe-area-inset-top) + 20px); }
         
-        /* 权限激活层 */
-        #audioLayer { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: var(--main); color: white; z-index: 10001; display: flex; flex-direction: column; align-items: center; justify-content: center; text-align: center; }
-        .start-btn { background: var(--blue); color: white; border: none; padding: 20px 40px; border-radius: 50px; font-size: 18px; font-weight: bold; margin-top: 20px; box-shadow: 0 10px 20px rgba(0,122,255,0.4); }
+        /* 启动层 */
+        #initLayer { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: #000; color: #fff; z-index: 99999; display: flex; flex-direction: column; align-items: center; justify-content: center; text-align: center; }
+        .btn-start { background: var(--blue); color: white; border: none; padding: 20px 50px; border-radius: 50px; font-size: 18px; font-weight: bold; margin-top: 30px; }
 
-        /* 响铃全屏层 */
-        #alarmOverlay { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: var(--red); color: white; z-index: 10000; flex-direction: column; align-items: center; justify-content: center; }
-        .stop-btn { margin-top: 50px; padding: 20px 60px; border-radius: 50px; border: none; background: white; color: var(--red); font-weight: 900; font-size: 22px; }
+        .card { background: #f2f2f2; border-radius: 25px; padding: 20px; margin-bottom: 20px; }
+        input { width: 100%; border: none; padding: 15px; border-radius: 15px; margin-bottom: 10px; box-sizing: border-box; font-size: 16px; }
+        .primary-btn { width: 100%; background: #000; color: #fff; border: none; padding: 18px; border-radius: 18px; font-weight: bold; }
 
-        /* 卡片设计 */
-        .card { background: var(--gray); border-radius: 25px; padding: 20px; margin-bottom: 25px; }
-        input { width: 100%; border: 1.5px solid #ddd; background: #fff; padding: 15px; border-radius: 15px; margin-bottom: 12px; box-sizing: border-box; font-size: 16px; outline: none; }
-        .primary-btn { width: 100%; background: var(--main); color: #fff; border: none; padding: 18px; border-radius: 18px; font-weight: bold; font-size: 18px; }
-
-        .goal-item { border: 2.5px solid var(--main); border-radius: 22px; padding: 20px; margin-top: 15px; position: relative; background: #fff; display: flex; align-items: center; transition: 0.3s; }
-        .goal-item.done { opacity: 0.4; background: #fafafa; border-color: #ddd; }
-        .goal-info { flex: 1; }
-        .goal-title { font-size: 20px; font-weight: 900; }
+        /* 闹钟覆盖 */
+        #alarmOverlay { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: var(--red); color: white; z-index: 88888; flex-direction: column; align-items: center; justify-content: center; }
         
-        .check-box { width: 34px; height: 34px; border: 2.5px solid var(--main); border-radius: 12px; margin-left: 15px; display: flex; align-items: center; justify-content: center; flex-shrink: 0; }
-        .done .check-box { background: var(--main); border-color: var(--main); }
-        .done .check-box::after { content: '✓'; color: white; font-weight: bold; font-size: 22px; }
-        .delete-btn { position: absolute; top: -10px; right: 10px; background: white; color: var(--red); font-size: 11px; font-weight: bold; border: 1.5px solid var(--red); padding: 3px 8px; border-radius: 8px; }
+        .goal-item { border: 2px solid #000; border-radius: 20px; padding: 15px; margin-top: 10px; display: flex; align-items: center; position: relative; }
+        .goal-item.done { opacity: 0.3; }
+        .check-box { width: 30px; height: 30px; border: 2px solid #000; border-radius: 10px; margin-left: auto; }
+        .done .check-box { background: #000; }
     </style>
 </head>
 <body>
 
-    <div id="audioLayer">
-        <div style="font-size: 50px;">🎯</div>
-        <h2 style="margin-top:20px;">初始化设置</h2>
-        <p style="padding:0 40px; opacity:0.7;">请开启通知权限并点击下方按钮，以确保后台提醒生效</p>
-        <button class="start-btn" onclick="initApp()">进入 Focus</button>
+    <div id="initLayer" onclick="activateApp()">
+        <h1>初始化 Focus</h1>
+        <p>点击开启后台提醒权限</p>
+        <button class="btn-start">开始自律</button>
     </div>
 
     <div id="alarmOverlay">
-        <h1 id="alarmTitle" style="font-size: 45px;">时间到！</h1>
-        <button class="stop-btn" onclick="stopAlarm()">停止并去打卡</button>
+        <h1 id="alarmTitle" style="font-size: 40px;">时间到！</h1>
+        <button onclick="stopAlarm()" style="padding:15px 50px; border-radius:30px; border:none; background:#fff; color:red; font-weight:bold;">停止</button>
     </div>
 
-    <h1 style="font-weight:900; letter-spacing:-1.5px;">Focus.</h1>
-
+    <h1>Focus.</h1>
     <div class="card">
-        <input type="text" id="gInput" placeholder="自律目标名称">
-        <input type="number" id="dInput" placeholder="天数 (例: 21)">
+        <input type="text" id="gInput" placeholder="目标名称">
+        <input type="number" id="dInput" placeholder="计划天数">
         <input type="time" id="tInput" value="08:00">
-        <button class="primary-btn" onclick="addGoal()">添加新计划</button>
+        <button class="primary-btn" onclick="addGoal()">保存计划</button>
     </div>
-
     <div id="list"></div>
 
     <audio id="alarmAudio" loop preload="auto">
@@ -62,84 +52,65 @@
     </audio>
 
     <script>
-        const STORE_KEY = 'focus_pwa_v13';
-        let goals = JSON.parse(localStorage.getItem(STORE_KEY)) || [];
         const audio = document.getElementById('alarmAudio');
+        let goals = JSON.parse(localStorage.getItem('focus_v14')) || [];
 
-        // 1. 初始化应用：请求权限 + 解锁音频
-        async function initApp() {
+        // 1. 激活 App 并请求最高权限
+        async function activateApp() {
             // 请求通知权限
             if ("Notification" in window) {
-                await Notification.requestPermission();
+                const permission = await Notification.requestPermission();
+                if (permission !== "granted") alert("请务必开启通知权限，否则无法后台提醒！");
             }
-            
+
             // 注册 Service Worker
             if ('serviceWorker' in navigator) {
                 navigator.serviceWorker.register('sw.js');
             }
 
-            // 静默解锁音频
-            audio.volume = 0;
+            // 激活声音通道
+            audio.muted = true;
             audio.play().then(() => {
                 audio.pause();
-                audio.volume = 1;
-                document.getElementById('audioLayer').style.display = 'none';
-            }).catch(() => {
-                alert("请再试一次");
+                audio.muted = false;
+                document.getElementById('initLayer').style.display = 'none';
             });
         }
 
-        // 2. 添加计划
-        function addGoal() {
-            const title = document.getElementById('gInput').value;
-            const days = document.getElementById('dInput').value;
-            const time = document.getElementById('tInput').value;
-            if(!title || !days) return alert("请填写完整");
-
-            goals.push({
-                id: Date.now(),
-                title: title,
-                totalDays: parseInt(days),
-                startTime: new Date().setHours(0,0,0,0),
-                time: time,
-                lastCheckDate: ""
-            });
-            save();
-            document.getElementById('gInput').value = '';
-        }
-
-        // 3. 闹钟监测引擎
+        // 2. 闹钟逻辑 (即使切到后台，只要进程没死就会跑)
         setInterval(() => {
             const now = new Date();
-            const timeStr = now.getHours().toString().padStart(2, '0') + ":" + now.getMinutes().toString().padStart(2, '0');
-            const dateStr = now.toDateString();
+            const curTime = now.getHours().toString().padStart(2, '0') + ":" + now.getMinutes().toString().padStart(2, '0');
+            const curDate = now.toDateString();
 
             if (now.getSeconds() === 0) {
                 goals.forEach(g => {
-                    const pastDays = Math.floor((now.getTime() - g.startTime) / (1000*60*60*24));
-                    const isDoneToday = g.lastCheckDate === dateStr;
-
-                    if (g.time === timeStr && pastDays < g.totalDays && !isDoneToday) {
-                        triggerAlarm(g.title);
+                    const isDoneToday = g.lastCheckDate === curDate;
+                    if (g.time === curTime && !isDoneToday) {
+                        ring(g.title);
                     }
                 });
             }
         }, 1000);
 
-        function triggerAlarm(title) {
-            // 全屏显示 + 声音
+        function ring(title) {
+            // 播放声音
+            audio.currentTime = 0;
+            audio.play().catch(() => {});
+
+            // 弹出系统级通知 (这是退出 App 后唯一的提醒手段)
+            if (Notification.permission === "granted") {
+                const n = new Notification("Focus 闹钟", {
+                    body: "该去完成：" + title,
+                    tag: "alarm",
+                    requireInteraction: true, // 通知不消失
+                    silent: false // 强制发出通知音
+                });
+                n.onclick = () => { window.focus(); stopAlarm(); };
+            }
+
             document.getElementById('alarmTitle').innerText = title;
             document.getElementById('alarmOverlay').style.display = 'flex';
-            audio.currentTime = 0;
-            audio.play();
-
-            // 发送系统通知 (即使在后台)
-            if (Notification.permission === "granted") {
-                new Notification("自律提醒", {
-                    body: `时间到了！该去完成：${title}`,
-                    requireInteraction: true // 通知不消失直到用户处理
-                });
-            }
         }
 
         function stopAlarm() {
@@ -147,45 +118,35 @@
             document.getElementById('alarmOverlay').style.display = 'none';
         }
 
-        function toggleCheck(id) {
-            const dateStr = new Date().toDateString();
-            goals = goals.map(g => {
-                if (g.id === id) g.lastCheckDate = (g.lastCheckDate === dateStr) ? "" : dateStr;
-                return g;
-            });
+        // 3. 基础功能
+        function addGoal() {
+            const t = document.getElementById('gInput').value;
+            const d = document.getElementById('dInput').value;
+            const ti = document.getElementById('tInput').value;
+            if(!t || !d) return;
+            goals.push({ id: Date.now(), title: t, days: d, time: ti, lastCheckDate: "" });
             save();
         }
 
-        function deleteGoal(id) {
-            if(confirm("确定删除？")) {
-                goals = goals.filter(g => g.id !== id);
-                save();
-            }
+        function toggleCheck(id) {
+            const d = new Date().toDateString();
+            goals = goals.map(g => { if(g.id === id) g.lastCheckDate = (g.lastCheckDate===d?"":d); return g; });
+            save();
         }
 
-        function save() {
-            localStorage.setItem(STORE_KEY, JSON.stringify(goals));
-            render();
-        }
+        function save() { localStorage.setItem('focus_v14', JSON.stringify(goals)); render(); }
 
         function render() {
-            const dateStr = new Date().toDateString();
-            document.getElementById('list').innerHTML = goals.map(g => {
-                const pastDays = Math.floor((new Date().getTime() - g.startTime) / (1000*60*60*24));
-                const remaining = g.totalDays - pastDays;
-                const isDoneToday = g.lastCheckDate === dateStr;
-
-                return `
-                    <div class="goal-item ${isDoneToday ? 'done' : ''}">
-                        <div class="delete-btn" onclick="deleteGoal(${g.id})">删除</div>
-                        <div class="goal-info" onclick="toggleCheck(${g.id})">
-                            <div class="goal-title">${g.title}</div>
-                            <div style="font-size:12px; color:#666;">提醒：${g.time} | 剩余：${remaining > 0 ? remaining : 0} 天</div>
-                        </div>
-                        <div class="check-box" onclick="toggleCheck(${g.id})"></div>
+            const d = new Date().toDateString();
+            document.getElementById('list').innerHTML = goals.map(g => `
+                <div class="goal-item ${g.lastCheckDate===d?'done':''}" onclick="toggleCheck(${g.id})">
+                    <div>
+                        <b>${g.title}</b><br>
+                        <small>${g.time} | 计划${g.days}天</small>
                     </div>
-                `;
-            }).reverse().join('');
+                    <div class="check-box"></div>
+                </div>
+            `).join('');
         }
         render();
     </script>
