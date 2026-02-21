@@ -2,78 +2,63 @@
 <html lang="zh-CN">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no, viewport-fit=cover">
     <title>极简自律</title>
     
     <meta name="mobile-web-app-capable" content="yes">
-    <meta name="apple-mobile-web-app-capable" content="yes">
-    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
-    <meta name="theme-color" content="#ffffff">
+    <link rel="manifest" href="data:application/manifest+json,{'name':'极简自律','short_name':'自律','start_url':'.','display':'standalone','background_color':'#ffffff','theme_color':'#000000'}">
 
     <style>
         :root { --bg: #ffffff; --main: #000000; --gray: #f2f2f2; }
-        body { background: var(--bg); color: var(--main); font-family: sans-serif; margin: 0; padding: 20px; }
-        .card { background: var(--gray); border-radius: 24px; padding: 20px; margin-bottom: 25px; }
-        h1 { font-size: 32px; font-weight: 900; margin-bottom: 25px; letter-spacing: -1px; }
-        label { display: block; font-size: 12px; margin: 10px 0 5px 10px; font-weight: bold; }
-        input { width: 100%; border: none; background: #fff; padding: 15px; border-radius: 15px; margin-bottom: 12px; box-sizing: border-box; font-size: 16px; outline: none; }
-        .primary-btn { width: 100%; background: var(--main); color: #fff; border: none; padding: 16px; border-radius: 18px; font-weight: bold; font-size: 16px; cursor: pointer; }
-        .goal-item { border: 2px solid var(--main); border-radius: 22px; padding: 18px; margin-bottom: 15px; }
+        body { background: var(--bg); color: var(--main); font-family: sans-serif; margin: 0; padding: env(safe-area-inset-top) 20px 20px 20px; }
+        .card { background: var(--gray); border-radius: 28px; padding: 25px; margin-bottom: 25px; }
+        h1 { font-size: 38px; font-weight: 900; margin-bottom: 30px; letter-spacing: -1.5px; }
+        label { display: block; font-size: 13px; margin: 10px 0 8px 10px; font-weight: 600; opacity: 0.6; }
+        input { width: 100%; border: 1px solid #ddd; background: #fff; padding: 18px; border-radius: 20px; margin-bottom: 15px; box-sizing: border-box; font-size: 16px; outline: none; }
+        .primary-btn { width: 100%; background: var(--main); color: #fff; border: none; padding: 18px; border-radius: 22px; font-weight: bold; font-size: 18px; cursor: pointer; }
+        .goal-item { border: 2.5px solid var(--main); border-radius: 26px; padding: 20px; margin-bottom: 18px; background: #fff; }
         .goal-header { display: flex; justify-content: space-between; align-items: center; }
-        .goal-item.done { background: var(--gray); border-color: var(--gray); opacity: 0.6; }
-        .check-box { width: 30px; height: 30px; border: 2px solid var(--main); border-radius: 50%; cursor: pointer; flex-shrink: 0; }
+        .goal-item.done { background: var(--gray); border-color: transparent; opacity: 0.5; }
+        .check-box { width: 34px; height: 34px; border: 2.5px solid var(--main); border-radius: 12px; cursor: pointer; }
         .done .check-box { background: var(--main); position: relative; }
-        .done .check-box::after { content: '✓'; color: #fff; position: absolute; left: 8px; top: 2px; font-size: 18px; }
-        .sync-btn { background: #000; color: #fff; font-size: 11px; padding: 6px 12px; border-radius: 12px; border: none; margin-top: 10px; cursor: pointer; }
-        .delete-link { font-size: 12px; color: #888; background: none; border: none; text-decoration: underline; margin-top: 15px; cursor: pointer; display: block; }
-        
-        /* 提示用户安装的文字 */
-        .install-tip { font-size: 12px; color: #666; text-align: center; margin-bottom: 20px; border: 1px dashed #ccc; padding: 10px; border-radius: 10px; }
+        .done .check-box::after { content: '✓'; color: #fff; position: absolute; left: 9px; top: 2px; font-size: 22px; }
+        .sync-btn { background: #000; color: #fff; font-size: 12px; padding: 8px 16px; border-radius: 14px; border: none; margin-top: 15px; cursor: pointer; font-weight: 600; }
+        .delete-link { font-size: 13px; color: #ff4d4d; background: none; border: none; margin-top: 20px; cursor: pointer; }
     </style>
 </head>
 <body>
 
-    <h1>FOCUS.</h1>
-    
-    <div class="install-tip">
-        💡 点击 Chrome 右上角“三个点” -> “安装应用”或“添加到主屏幕”，体验更佳。
-    </div>
+    <h1>Focus.</h1>
 
     <div class="card">
-        <label>自律目标</label>
+        <label>目标名称</label>
         <input type="text" id="gInput" placeholder="写下你的目标...">
-        <label>计划天数</label>
-        <input type="number" id="targetDays" placeholder="例如：21">
         <label>提醒时间</label>
         <input type="time" id="tInput" value="08:00">
-        <button class="primary-btn" onclick="add()">开启计划</button>
+        <button class="primary-btn" onclick="add()">开启 App 计划</button>
     </div>
 
     <div id="list"></div>
 
     <script>
-        let goals = JSON.parse(localStorage.getItem('my_discipline_final')) || [];
+        let goals = JSON.parse(localStorage.getItem('my_real_app_v1')) || [];
 
         function add() {
             const title = document.getElementById('gInput').value;
-            const days = document.getElementById('targetDays').value;
             const time = document.getElementById('tInput').value;
-            if(!title || !days) return alert("请填写完整");
-
-            goals.push({ id: Date.now(), title, targetDays: days, currentDays: 0, time, doneToday: false });
+            if(!title) return alert("写个名字吧");
+            goals.push({ id: Date.now(), title, time, doneToday: false, count: 0 });
             save();
             syncToSystem(time, title);
             document.getElementById('gInput').value = '';
-            document.getElementById('targetDays').value = '';
         }
 
-        // 核心同步函数：利用用户交互触发
         function syncToSystem(time, title) {
             const [h, m] = time.split(':');
+            // App 模式下，这个 Intent 协议会直接触达系统底层
             const intent = `intent:#Intent;action=android.intent.action.SET_ALARM;i:android.intent.extra.alarm.HOUR=${parseInt(h)};i:android.intent.extra.alarm.MINUTES=${parseInt(m)};s:android.intent.extra.alarm.MESSAGE=${encodeURIComponent(title)};b:android.intent.extra.alarm.SKIP_UI=false;end`;
             
-            // 弹出确认框。在小米系统里，确认框之后的跳转属于“高权重用户行为”
-            if (confirm("是否现在同步到系统闹钟？\n(若未跳转，请确保已点击“安装应用”并允许后台弹出)")) {
+            if (confirm("是否立即同步到闹钟？")) {
                 window.location.href = intent;
             }
         }
@@ -82,7 +67,7 @@
             goals = goals.map(g => {
                 if(g.id === id) {
                     g.doneToday = !g.doneToday;
-                    g.currentDays += g.doneToday ? 1 : -1;
+                    g.count += g.doneToday ? 1 : -1;
                 }
                 return g;
             });
@@ -90,28 +75,21 @@
         }
 
         function del(id) {
-            if(confirm("确定删除？")) {
-                goals = goals.filter(g => g.id !== id);
-                save();
-            }
+            if(confirm("确定删除？")) { goals = goals.filter(g => g.id !== id); save(); }
         }
 
-        function save() {
-            localStorage.setItem('my_discipline_final', JSON.stringify(goals));
-            render();
-        }
-
+        function save() { localStorage.setItem('my_real_app_v1', JSON.stringify(goals)); render(); }
         function render() {
             document.getElementById('list').innerHTML = goals.map(g => `
                 <div class="goal-item ${g.doneToday ? 'done' : ''}">
                     <div class="goal-header">
                         <div>
-                            <div style="font-weight:bold; font-size:18px;">${g.title}</div>
-                            <div style="font-size:12px; color:#666;">进度: ${g.currentDays}/${g.targetDays} 天</div>
+                            <div style="font-weight:900; font-size:20px;">${g.title}</div>
+                            <div style="font-size:13px; color:#666;">坚持了 ${g.count} 天 • ${g.time}</div>
                         </div>
                         <div class="check-box" onclick="toggle(${g.id})"></div>
                     </div>
-                    <button class="sync-btn" onclick="syncToSystem('${g.time}', '${g.title}')">⏰ 同步响铃: ${g.time}</button>
+                    <button class="sync-btn" onclick="syncToSystem('${g.time}', '${g.title}')">⏰ 同步闹钟</button>
                     <button class="delete-link" onclick="del(${g.id})">删除</button>
                 </div>
             `).reverse().join('');
