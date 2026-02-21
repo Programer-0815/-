@@ -3,106 +3,134 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no, viewport-fit=cover">
-    <title>极简自律 App</title>
-    
-    <link rel="manifest" href='data:application/manifest+json,{"name":"极简自律","short_name":"Focus","start_url":".","display":"standalone","background_color":"#ffffff","theme_color":"#000000","icons":[{"src":"https://cdn-icons-png.flaticon.com/512/3587/3587210.png","sizes":"512x512","type":"image/png"}]}'>
-    <meta name="mobile-web-app-capable" content="yes">
-
+    <title>Focus 自带闹钟版</title>
     <style>
-        :root { --bg: #ffffff; --main: #000000; --gray: #f2f2f2; }
+        :root { --bg: #ffffff; --main: #000000; --gray: #f2f2f2; --red: #ff3b30; --green: #34c759; }
         body { background: var(--bg); color: var(--main); font-family: -apple-system, sans-serif; margin: 0; padding: env(safe-area-inset-top) 20px 40px 20px; }
-        .card { background: var(--gray); border-radius: 30px; padding: 25px; margin-bottom: 25px; box-shadow: 0 10px 30px rgba(0,0,0,0.03); }
-        h1 { font-size: 42px; font-weight: 900; margin-bottom: 30px; letter-spacing: -2px; }
-        label { display: block; font-size: 13px; margin: 10px 0 8px 12px; font-weight: 700; opacity: 0.6; }
-        input { width: 100%; border: none; background: #fff; padding: 18px; border-radius: 20px; margin-bottom: 15px; box-sizing: border-box; font-size: 16px; outline: none; }
-        .primary-btn { width: 100%; background: var(--main); color: #fff; border: none; padding: 20px; border-radius: 22px; font-weight: bold; font-size: 18px; cursor: pointer; }
-        .goal-item { border: 2.5px solid var(--main); border-radius: 28px; padding: 22px; margin-bottom: 18px; background: #fff; }
-        .check-box { width: 36px; height: 36px; border: 2.5px solid var(--main); border-radius: 14px; cursor: pointer; }
-        .done .check-box { background: var(--main); position: relative; }
-        .done .check-box::after { content: '✓'; color: #fff; position: absolute; left: 9px; top: 1px; font-size: 24px; }
-        .sync-btn { background: #000; color: #fff; font-size: 12px; padding: 10px 18px; border-radius: 15px; border: none; margin-top: 15px; cursor: pointer; font-weight: 700; }
+        .card { background: var(--gray); border-radius: 25px; padding: 20px; margin-bottom: 20px; }
+        h1 { font-size: 38px; font-weight: 900; margin-bottom: 20px; }
+        label { display: block; font-size: 12px; margin: 10px 0 5px 10px; font-weight: bold; opacity: 0.6; }
+        input { width: 100%; border: 1px solid #ddd; background: #fff; padding: 15px; border-radius: 15px; margin-bottom: 10px; box-sizing: border-box; font-size: 16px; outline: none; }
+        .primary-btn { width: 100%; background: var(--main); color: #fff; border: none; padding: 18px; border-radius: 18px; font-weight: bold; font-size: 18px; cursor: pointer; }
+        
+        /* 闹钟正在响铃的样式 */
+        #alarmOverlay { display: none; position: fixed; top:0; left:0; width:100%; height:100%; background: var(--red); color:white; z-index:9999; flex-direction:column; align-items:center; justify-content:center; text-align:center; }
+        
+        .goal-item { border: 2px solid var(--main); border-radius: 20px; padding: 20px; margin-top: 15px; position: relative; background: #fff; }
+        .goal-title { font-size: 20px; font-weight: 900; }
+        .goal-meta { font-size: 13px; color: #666; margin-top: 5px; }
+        .delete-btn { position: absolute; top: 20px; right: 20px; color: var(--red); font-size: 12px; font-weight: bold; cursor: pointer; }
+        .status-on { color: var(--green); font-weight: bold; }
     </style>
 </head>
 <body>
 
-    <h1>FOCUS.</h1>
+    <div id="alarmOverlay">
+        <h2 id="alarmTitle" style="font-size: 40px;">时间到！</h2>
+        <p style="font-size: 20px;">该去完成你的自律计划了</p>
+        <button onclick="stopAlarm()" style="margin-top:40px; padding:20px 50px; border-radius:50px; border:none; background:white; color:red; font-weight:bold; font-size:20px;">关闭闹钟</button>
+    </div>
+
+    <h1>Focus.</h1>
 
     <div class="card">
-        <label>设定目标</label>
-        <input type="text" id="gInput" placeholder="写下你的目标...">
-        <label>提醒时间</label>
+        <label>自律目标</label>
+        <input type="text" id="gInput" placeholder="例如：背单词">
+        <label>计划总天数</label>
+        <input type="number" id="dInput" placeholder="例如：30">
+        <label>响铃时刻</label>
         <input type="time" id="tInput" value="08:00">
-        <button class="primary-btn" onclick="add()">开启计划并跳转</button>
+        <button class="primary-btn" onclick="addGoal()">开启内置闹钟计划</button>
     </div>
 
     <div id="list"></div>
 
+    <audio id="alarmAudio" loop>
+        <source src="https://actions.google.com/sounds/v1/alarms/digital_clock_beep.ogg" type="audio/ogg">
+    </audio>
+
     <script>
-        let goals = JSON.parse(localStorage.getItem('focus_final_v5')) || [];
+        let goals = JSON.parse(localStorage.getItem('focus_internal_v1')) || [];
+        const audio = document.getElementById('alarmAudio');
+        const overlay = document.getElementById('alarmOverlay');
 
-        function add() {
+        function addGoal() {
             const title = document.getElementById('gInput').value;
+            const days = document.getElementById('dInput').value;
             const time = document.getElementById('tInput').value;
-            if(!title) return alert("请输入内容");
-            
-            goals.push({ id: Date.now(), title, time, doneToday: false, count: 0 });
-            save();
-            // 添加完立即触发跳转
-            syncToSystem(time, title);
-            document.getElementById('gInput').value = '';
-        }
+            if(!title || !days) return alert("请填写完整");
 
-        function syncToSystem(time, title) {
-            const [h, m] = time.split(':');
-            const hour = parseInt(h, 10);
-            const minute = parseInt(m, 10);
-
-            // 【核心：经反复检查的 Android 原生闹钟 Intent】
-            const intentUri = `intent:#Intent;action=android.intent.action.SET_ALARM;i:android.intent.extra.alarm.HOUR=${hour};i:android.intent.extra.alarm.MINUTES=${minute};s:android.intent.extra.alarm.MESSAGE=${encodeURIComponent(title)};b:android.intent.extra.alarm.SKIP_UI=false;end`;
-
-            // 1. 模拟真实 A 标签点击（最高优先级触发）
-            const link = document.createElement('a');
-            link.href = intentUri;
-            document.body.appendChild(link);
-            link.click();
-            document.body.removeChild(link);
-
-            // 2. 状态监测补丁：如果 1 秒后页面未被切到后台，说明被系统拦截了
-            setTimeout(() => {
-                if (!document.hidden) {
-                    if (confirm("跳转失败？可能是由于系统权限拦截。\n\n请在『应用信息-权限管理』中开启『后台弹出界面』权限后再试。")) {
-                        window.location.href = intentUri;
-                    }
-                }
-            }, 1000);
-        }
-
-        function toggle(id) {
-            goals = goals.map(g => {
-                if(g.id === id) {
-                    g.doneToday = !g.doneToday;
-                    g.count += g.doneToday ? 1 : -1;
-                }
-                return g;
+            goals.push({
+                id: Date.now(),
+                title: title,
+                totalDays: parseInt(days),
+                startTime: new Date().getTime(),
+                time: time,
+                active: true // 闹钟开启状态
             });
-            save();
+            saveData();
+            // 手机端必须先通过一次用户点击来“激活”音频权限
+            audio.play().then(() => { audio.pause(); }).catch(e => console.log("等待激活"));
+            
+            document.getElementById('gInput').value = '';
+            document.getElementById('dInput').value = '';
         }
 
-        function save() { localStorage.setItem('focus_final_v5', JSON.stringify(goals)); render(); }
-        
+        // 每秒钟检查一次时间
+        setInterval(() => {
+            const now = new Date();
+            const currentStr = now.getHours().toString().padStart(2, '0') + ":" + now.getMinutes().toString().padStart(2, '0');
+            const seconds = now.getSeconds();
+
+            goals.forEach(g => {
+                // 如果时间匹配且秒数为0（防止一分钟内重复响），且状态为开启
+                if (g.active && g.time === currentStr && seconds === 0) {
+                    startAlarm(g.title);
+                }
+            });
+        }, 1000);
+
+        function startAlarm(title) {
+            document.getElementById('alarmTitle').innerText = title;
+            overlay.style.display = 'flex';
+            audio.play();
+            // 震动（如果手机支持）
+            if (window.navigator.vibrate) window.navigator.vibrate([500, 300, 500]);
+        }
+
+        function stopAlarm() {
+            audio.pause();
+            audio.currentTime = 0;
+            overlay.style.display = 'none';
+        }
+
+        function deleteGoal(id) {
+            if(confirm("确定删除？")) {
+                goals = goals.filter(g => g.id !== id);
+                saveData();
+            }
+        }
+
+        function saveData() {
+            localStorage.setItem('focus_internal_v1', JSON.stringify(goals));
+            render();
+        }
+
         function render() {
-            document.getElementById('list').innerHTML = goals.map(g => `
-                <div class="goal-item ${g.doneToday ? 'done' : ''}">
-                    <div style="display:flex; justify-content:space-between; align-items:center;">
-                        <div>
-                            <div style="font-weight:900; font-size:22px;">${g.title}</div>
-                            <div style="font-size:14px; color:#666; margin-top:4px;">坚持 ${g.count} 天 • ${g.time}</div>
+            document.getElementById('list').innerHTML = goals.map(g => {
+                const pastDays = Math.floor((new Date().getTime() - g.startTime) / (1000 * 60 * 60 * 24));
+                const remaining = g.totalDays - pastDays;
+                return `
+                    <div class="goal-item">
+                        <div class="delete-btn" onclick="deleteGoal(${g.id})">删除</div>
+                        <div class="goal-title">${g.title}</div>
+                        <div class="goal-meta">响铃时间：${g.time} | <span class="status-on">闹钟运行中</span></div>
+                        <div style="margin-top:10px; font-size:12px; font-weight:bold;">
+                            ${remaining > 0 ? '还剩 ' + remaining + ' 天' : '计划已结束'}
                         </div>
-                        <div class="check-box" onclick="toggle(${g.id})"></div>
                     </div>
-                    <button class="sync-btn" onclick="syncToSystem('${g.time}', '${g.title}')">⏰ 同步到闹钟</button>
-                </div>
-            `).reverse().join('');
+                `;
+            }).reverse().join('');
         }
         render();
     </script>
