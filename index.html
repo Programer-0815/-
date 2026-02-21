@@ -3,48 +3,36 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no, viewport-fit=cover">
-    <title>Focus Pro 完整版</title>
+    <title>Focus Pro Ultimate</title>
     <style>
-        :root { --bg: #ffffff; --main: #000000; --red: #ff3b30; --blue: #007aff; --gray: #f2f2f2; }
+        :root { --bg: #ffffff; --main: #000000; --red: #ff3b30; --blue: #007aff; --gray: #f2f2f2; --green: #34c759; }
         body { background: var(--bg); font-family: -apple-system, sans-serif; margin: 0; padding: 20px; padding-top: calc(env(safe-area-inset-top) + 20px); -webkit-tap-highlight-color: transparent; }
         
-        /* 启动激活层 */
+        /* 1. 启动层：解锁权限 */
         #initLayer { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: #000; color: #fff; z-index: 99999; display: flex; flex-direction: column; align-items: center; justify-content: center; text-align: center; }
-        .btn-start { background: var(--blue); color: white; border: none; padding: 20px 50px; border-radius: 50px; font-size: 18px; font-weight: bold; margin-top: 30px; }
+        .btn-start { background: var(--blue); color: white; border: none; padding: 20px 60px; border-radius: 50px; font-size: 20px; font-weight: bold; margin-top: 30px; box-shadow: 0 10px 20px rgba(0,122,255,0.4); }
 
-        /* 闹钟响铃层 */
+        /* 2. 闹钟层：覆盖全屏 */
         #alarmOverlay { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: var(--red); color: white; z-index: 88888; flex-direction: column; align-items: center; justify-content: center; }
-        
-        /* 卡片样式 */
-        .card { background: var(--gray); border-radius: 25px; padding: 20px; margin-bottom: 20px; }
-        input { width: 100%; border: none; padding: 15px; border-radius: 15px; margin-bottom: 10px; box-sizing: border-box; font-size: 16px; outline: none; }
-        .primary-btn { width: 100%; background: #000; color: #fff; border: none; padding: 18px; border-radius: 18px; font-weight: bold; font-size: 18px; cursor: pointer; }
+        .btn-stop { margin-top: 50px; padding: 20px 60px; border-radius: 50px; border: none; background: #fff; color: var(--red); font-weight: 900; font-size: 22px; }
 
-        /* 列表项 */
+        /* 3. 输入区域 */
+        .card { background: var(--gray); border-radius: 25px; padding: 25px; margin-bottom: 25px; }
+        input { width: 100%; border: none; padding: 15px; border-radius: 15px; margin-bottom: 12px; box-sizing: border-box; font-size: 16px; outline: none; }
+        .primary-btn { width: 100%; background: #000; color: #fff; border: none; padding: 18px; border-radius: 18px; font-weight: bold; font-size: 18px; }
+
+        /* 4. 任务列表 */
         .goal-item { border: 2.5px solid #000; border-radius: 22px; padding: 20px; margin-top: 15px; display: flex; align-items: center; position: relative; background: #fff; transition: 0.3s; }
-        .goal-item.done { opacity: 0.4; background: #fafafa; border-color: #ccc; }
-        
-        .goal-info { flex: 1; }
+        .goal-item.done { opacity: 0.4; background: #fafafa; border-color: #ddd; }
+        .goal-info { flex: 1; cursor: pointer; }
         .goal-title { font-size: 20px; font-weight: 900; margin: 0; }
         .goal-sub { font-size: 12px; color: #666; margin-top: 5px; }
 
-        /* 删除按钮：点击卡片右上角的“X” */
-        .delete-btn { 
-            position: absolute; 
-            top: 15px; 
-            right: 15px; 
-            color: var(--red); 
-            font-size: 12px; 
-            font-weight: bold; 
-            border: 1px solid var(--red); 
-            padding: 2px 8px; 
-            border-radius: 8px; 
-            cursor: pointer; 
-            z-index: 10;
-        }
+        /* 删除按钮 */
+        .delete-btn { position: absolute; top: 15px; right: 15px; color: var(--red); font-size: 12px; font-weight: bold; border: 1.5px solid var(--red); padding: 3px 10px; border-radius: 8px; cursor: pointer; background: white; z-index: 10; }
 
         /* 打勾方框 */
-        .check-box { width: 34px; height: 34px; border: 2.5px solid #000; border-radius: 12px; margin-left: 15px; flex-shrink: 0; cursor: pointer; display: flex; align-items: center; justify-content: center; }
+        .check-box { width: 34px; height: 34px; border: 2.5px solid #000; border-radius: 12px; margin-left: 15px; flex-shrink: 0; display: flex; align-items: center; justify-content: center; cursor: pointer; }
         .done .check-box { background: #000; }
         .done .check-box::after { content: '✓'; color: white; font-weight: bold; font-size: 22px; }
     </style>
@@ -52,24 +40,25 @@
 <body>
 
     <div id="initLayer" onclick="activateApp()">
-        <div style="font-size: 50px;">🔔</div>
-        <h1>Focus.</h1>
-        <p>点击屏幕解锁权限并开始</p>
-        <button class="btn-start">进入 App</button>
+        <div style="font-size: 60px;">🚀</div>
+        <h1 style="letter-spacing:-1px;">Focus Pro</h1>
+        <p style="opacity:0.7;">点击屏幕开启后台闹钟权限</p>
+        <button class="btn-start">开始自律</button>
     </div>
 
     <div id="alarmOverlay">
-        <h1 id="alarmTitle" style="font-size: 45px;">提醒</h1>
-        <button onclick="stopAlarm()" style="margin-top:40px; padding:20px 60px; border-radius:50px; border:none; background:#fff; color:red; font-weight:bold; font-size:20px;">停止响铃</button>
+        <div style="font-size: 80px; animation: pulse 1s infinite;">⏰</div>
+        <h1 id="alarmTitle" style="font-size: 40px; margin-top:20px;">时间到！</h1>
+        <button class="btn-stop" onclick="stopAlarm()">停止响铃</button>
     </div>
 
-    <h1>Focus.</h1>
+    <h1 style="font-weight:900; letter-spacing:-1.5px; font-size: 32px;">Focus.</h1>
 
     <div class="card">
-        <input type="text" id="gInput" placeholder="目标名称 (如: 每天运动)">
-        <input type="number" id="dInput" placeholder="坚持天数 (如: 21)">
+        <input type="text" id="gInput" placeholder="自律目标名称">
+        <input type="number" id="dInput" placeholder="计划天数 (如 21)">
         <input type="time" id="tInput" value="08:00">
-        <button class="primary-btn" onclick="addGoal()">开启新计划</button>
+        <button class="primary-btn" onclick="addGoal()">开启计划</button>
     </div>
 
     <div id="list"></div>
@@ -79,13 +68,23 @@
     </audio>
 
     <script>
-        const STORE_KEY = 'focus_final_v15';
+        const STORE_KEY = 'focus_pro_final_v16';
         let goals = JSON.parse(localStorage.getItem(STORE_KEY)) || [];
         const audio = document.getElementById('alarmAudio');
 
-        // 初始化权限
+        // 1. 初始化应用
         async function activateApp() {
-            if ("Notification" in window) await Notification.requestPermission();
+            // 请求系统通知权限
+            if ("Notification" in window) {
+                await Notification.requestPermission();
+            }
+            
+            // 尝试注册 Service Worker (用于辅助后台)
+            if ('serviceWorker' in navigator) {
+                navigator.serviceWorker.register('sw.js').catch(()=>{});
+            }
+
+            // 解锁声音
             audio.muted = true;
             audio.play().then(() => {
                 audio.pause();
@@ -94,7 +93,7 @@
             });
         }
 
-        // 添加计划
+        // 2. 添加计划
         function addGoal() {
             const t = document.getElementById('gInput').value;
             const d = document.getElementById('dInput').value;
@@ -111,19 +110,19 @@
             });
             save();
             document.getElementById('gInput').value = '';
+            document.getElementById('dInput').value = '';
         }
 
-        // 删除功能
-        function deleteGoal(id, event) {
-            // 阻止点击删除按钮时触发打勾
-            event.stopPropagation();
-            if(confirm("确定要删除这个计划吗？")) {
+        // 3. 删除计划
+        function deleteGoal(id, e) {
+            e.stopPropagation(); // 阻止触发打勾
+            if(confirm("确定要删除这个目标吗？")) {
                 goals = goals.filter(g => g.id !== id);
                 save();
             }
         }
 
-        // 闹钟监测引擎 (每秒运行)
+        // 4. 闹钟核心引擎 (每秒监测)
         setInterval(() => {
             const now = new Date();
             const timeStr = now.getHours().toString().padStart(2, '0') + ":" + now.getMinutes().toString().padStart(2, '0');
@@ -134,6 +133,7 @@
                     const pastDays = Math.floor((now.getTime() - g.startTime) / (1000*60*60*24));
                     const isDoneToday = g.lastCheckDate === dateStr;
                     
+                    // 满足时间、未过期、今天未打卡
                     if (g.time === timeStr && pastDays < g.days && !isDoneToday) {
                         triggerAlarm(g.title);
                     }
@@ -142,13 +142,19 @@
         }, 1000);
 
         function triggerAlarm(title) {
+            // 播放声音
             audio.currentTime = 0;
-            audio.play().catch(e => console.log("播放受阻"));
+            audio.play().catch(()=>{});
             
+            // 系统通知
             if (Notification.permission === "granted") {
-                new Notification("Focus 提醒", { body: "该去完成: " + title, requireInteraction: true });
+                new Notification("Focus 提醒", { 
+                    body: "该去完成: " + title, 
+                    requireInteraction: true 
+                });
             }
 
+            // 弹出覆盖层
             document.getElementById('alarmTitle').innerText = title;
             document.getElementById('alarmOverlay').style.display = 'flex';
         }
@@ -158,7 +164,7 @@
             document.getElementById('alarmOverlay').style.display = 'none';
         }
 
-        // 打勾逻辑
+        // 5. 打卡逻辑
         function toggleCheck(id) {
             const dStr = new Date().toDateString();
             goals = goals.map(g => {
@@ -194,5 +200,12 @@
         }
         render();
     </script>
+    <style>
+        @keyframes pulse {
+            0% { transform: scale(1); }
+            50% { transform: scale(1.1); }
+            100% { transform: scale(1); }
+        }
+    </style>
 </body>
 </html>
