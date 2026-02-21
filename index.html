@@ -54,16 +54,38 @@
             document.getElementById('targetDays').value = '';
         }
 
-        // 修改后的核心闹钟跳转逻辑
+        // 兼容性加强版：调动安卓系统闹钟
         function syncToSystem(time, title) {
-            const [h, m] = time.split(':');
-            // 使用了 parseInt 确保小时和分钟是纯数字，增强兼容性
-            const intent = `intent:#Intent;action=android.intent.action.SET_ALARM;i:android.intent.extra.alarm.HOUR=${parseInt(h)};i:android.intent.extra.alarm.MINUTES=${parseInt(m)};s:android.intent.extra.alarm.MESSAGE=${encodeURIComponent(title)};b:android.intent.extra.alarm.SKIP_UI=false;end`;
+            const parts = time.split(':');
+            const h = parseInt(parts[0], 10);
+            const m = parseInt(parts[1], 10);
+
+            if (isNaN(h) || isNaN(m)) {
+                alert("时间解析失败，请重新选择");
+                return;
+            }
+
+            // 构建更详细的 Intent 协议
+            const intent = `intent:#Intent;action=android.intent.action.SET_ALARM;` +
+                           `i:android.intent.extra.alarm.HOUR=${h};` +
+                           `i:android.intent.extra.alarm.MINUTES=${m};` +
+                           `s:android.intent.extra.alarm.MESSAGE=${encodeURIComponent(title)};` +
+                           `b:android.intent.extra.alarm.SKIP_UI=false;` +
+                           `b:android.intent.extra.alarm.VIBRATE=true;` +
+                           `end`;
             
             try {
+                // 尝试跳转
                 window.location.href = intent;
+                
+                // 容错检查：如果1秒后还在本页，说明跳转被浏览器拦截了
+                setTimeout(() => {
+                    if (!document.hidden) {
+                        alert("跳转失败！\n请确保：\n1. 使用 Android 手机\n2. 在 Chrome 浏览器中打开（不要在微信内点击）\n3. 允许浏览器打开外部应用");
+                    }
+                }, 1000);
             } catch (e) {
-                alert("当前环境不支持自动跳转闹钟，请使用 Chrome 浏览器打开。");
+                alert("您的浏览器不支持一键同步闹钟。");
             }
         }
 
@@ -100,7 +122,7 @@
                         </div>
                         <div class="check-box" onclick="toggle(${g.id})"></div>
                     </div>
-                    <button class="sync-btn" onclick="syncToSystem('${g.time}', '${g.title}')">⏰ 同步闹钟: ${g.time}</button>
+                    <button class="sync-btn" onclick="syncToSystem('${g.time}', '${g.title}')">⏰ 同步系统响铃: ${g.time}</button>
                     <button class="delete-link" onclick="del(${g.id})">删除目标</button>
                 </div>
             `).reverse().join('');
