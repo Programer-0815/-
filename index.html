@@ -3,8 +3,13 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+    <title>极简自律</title>
+    
     <meta name="mobile-web-app-capable" content="yes">
-    <title>极自律</title>
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <meta name="theme-color" content="#ffffff">
+
     <style>
         :root { --bg: #ffffff; --main: #000000; --gray: #f2f2f2; }
         body { background: var(--bg); color: var(--main); font-family: sans-serif; margin: 0; padding: 20px; }
@@ -21,11 +26,18 @@
         .done .check-box::after { content: '✓'; color: #fff; position: absolute; left: 8px; top: 2px; font-size: 18px; }
         .sync-btn { background: #000; color: #fff; font-size: 11px; padding: 6px 12px; border-radius: 12px; border: none; margin-top: 10px; cursor: pointer; }
         .delete-link { font-size: 12px; color: #888; background: none; border: none; text-decoration: underline; margin-top: 15px; cursor: pointer; display: block; }
+        
+        /* 提示用户安装的文字 */
+        .install-tip { font-size: 12px; color: #666; text-align: center; margin-bottom: 20px; border: 1px dashed #ccc; padding: 10px; border-radius: 10px; }
     </style>
 </head>
 <body>
 
-    <h1>Focus.</h1>
+    <h1>FOCUS.</h1>
+    
+    <div class="install-tip">
+        💡 点击 Chrome 右上角“三个点” -> “安装应用”或“添加到主屏幕”，体验更佳。
+    </div>
 
     <div class="card">
         <label>自律目标</label>
@@ -47,6 +59,7 @@
             const days = document.getElementById('targetDays').value;
             const time = document.getElementById('tInput').value;
             if(!title || !days) return alert("请填写完整");
+
             goals.push({ id: Date.now(), title, targetDays: days, currentDays: 0, time, doneToday: false });
             save();
             syncToSystem(time, title);
@@ -54,24 +67,15 @@
             document.getElementById('targetDays').value = '';
         }
 
+        // 核心同步函数：利用用户交互触发
         function syncToSystem(time, title) {
             const [h, m] = time.split(':');
             const intent = `intent:#Intent;action=android.intent.action.SET_ALARM;i:android.intent.extra.alarm.HOUR=${parseInt(h)};i:android.intent.extra.alarm.MINUTES=${parseInt(m)};s:android.intent.extra.alarm.MESSAGE=${encodeURIComponent(title)};b:android.intent.extra.alarm.SKIP_UI=false;end`;
             
-            // 尝试模拟用户行为跳转
-            const a = document.createElement('a');
-            a.href = intent;
-            document.body.appendChild(a);
-            a.click();
-            document.body.removeChild(a);
-
-            setTimeout(() => {
-                if (!document.hidden) {
-                    if (confirm("提示：若未跳转，请点击确认手动允许跳转闹钟。")) {
-                        window.location.href = intent;
-                    }
-                }
-            }, 600);
+            // 弹出确认框。在小米系统里，确认框之后的跳转属于“高权重用户行为”
+            if (confirm("是否现在同步到系统闹钟？\n(若未跳转，请确保已点击“安装应用”并允许后台弹出)")) {
+                window.location.href = intent;
+            }
         }
 
         function toggle(id) {
@@ -86,10 +90,17 @@
         }
 
         function del(id) {
-            if(confirm("确定删除？")) { goals = goals.filter(g => g.id !== id); save(); }
+            if(confirm("确定删除？")) {
+                goals = goals.filter(g => g.id !== id);
+                save();
+            }
         }
 
-        function save() { localStorage.setItem('my_discipline_final', JSON.stringify(goals)); render(); }
+        function save() {
+            localStorage.setItem('my_discipline_final', JSON.stringify(goals));
+            render();
+        }
+
         function render() {
             document.getElementById('list').innerHTML = goals.map(g => `
                 <div class="goal-item ${g.doneToday ? 'done' : ''}">
