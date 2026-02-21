@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
-    <title>自律</title>
+    <title>极简自律</title>
     <style>
         :root { --bg: #ffffff; --main: #000000; --gray: #f2f2f2; }
         body { background: var(--bg); color: var(--main); font-family: sans-serif; margin: 0; padding: 20px; }
@@ -24,10 +24,10 @@
 </head>
 <body>
 
-    <h1>FOCUS</h1>
+    <h1>Focus.</h1>
 
     <div class="card">
-        <label>目标</label>
+        <label>自律目标</label>
         <input type="text" id="gInput" placeholder="写下你的目标...">
         <label>计划天数</label>
         <input type="number" id="targetDays" placeholder="例如：21">
@@ -54,39 +54,22 @@
             document.getElementById('targetDays').value = '';
         }
 
-        // 兼容性加强版：调动安卓系统闹钟
+        // 适配小米 14T Pro 澎湃 OS 的同步函数
         function syncToSystem(time, title) {
             const parts = time.split(':');
             const h = parseInt(parts[0], 10);
             const m = parseInt(parts[1], 10);
 
-            if (isNaN(h) || isNaN(m)) {
-                alert("时间解析失败，请重新选择");
-                return;
-            }
-
-            // 构建更详细的 Intent 协议
+            // 移除干扰逻辑，只发送最核心的闹钟指令
             const intent = `intent:#Intent;action=android.intent.action.SET_ALARM;` +
                            `i:android.intent.extra.alarm.HOUR=${h};` +
                            `i:android.intent.extra.alarm.MINUTES=${m};` +
                            `s:android.intent.extra.alarm.MESSAGE=${encodeURIComponent(title)};` +
                            `b:android.intent.extra.alarm.SKIP_UI=false;` +
-                           `b:android.intent.extra.alarm.VIBRATE=true;` +
                            `end`;
             
-            try {
-                // 尝试跳转
-                window.location.href = intent;
-                
-                // 容错检查：如果1秒后还在本页，说明跳转被浏览器拦截了
-                setTimeout(() => {
-                    if (!document.hidden) {
-                        alert("跳转失败！\n请确保：\n1. 使用 Android 手机\n2. 在 Chrome 浏览器中打开（不要在微信内点击）\n3. 允许浏览器打开外部应用");
-                    }
-                }, 1000);
-            } catch (e) {
-                alert("您的浏览器不支持一键同步闹钟。");
-            }
+            // 直接调起，让系统决定是否弹出询问框
+            window.location.href = intent;
         }
 
         function toggle(id) {
