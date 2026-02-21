@@ -6,43 +6,71 @@
     <title>Focus Pro</title>
     <style>
         :root { --bg: #ffffff; --main: #000000; --gray: #f2f2f2; --red: #ff3b30; --blue: #007aff; --green: #34c759; }
-        body { background: var(--bg); color: var(--main); font-family: -apple-system, sans-serif; margin: 0; padding: env(safe-area-inset-top) 20px 40px 20px; -webkit-tap-highlight-color: transparent; }
         
-        .card { background: var(--gray); border-radius: 25px; padding: 20px; margin-bottom: 25px; }
-        input { width: 100%; border: 1.5px solid #eee; background: #fff; padding: 15px; border-radius: 15px; margin-bottom: 10px; box-sizing: border-box; font-size: 16px; outline: none; transition: 0.2s; }
-        input:focus { border-color: var(--main); }
+        /* 基础设置：增加安全距离 */
+        body { 
+            background: var(--bg); 
+            color: var(--main); 
+            font-family: -apple-system, sans-serif; 
+            margin: 0; 
+            padding: 20px;
+            padding-top: calc(env(safe-area-inset-top) + 20px); /* 自动避开摄像头 */
+            -webkit-tap-highlight-color: transparent; 
+        }
+
+        /* 修复：蓝色激活按钮，放在显眼位置并加阴影 */
+        #audioFix { 
+            background: var(--blue); 
+            color: white; 
+            text-align: center; 
+            padding: 18px; 
+            border-radius: 18px; 
+            margin-bottom: 30px; 
+            font-weight: 900; 
+            box-shadow: 0 10px 20px rgba(0,122,255,0.3);
+            cursor: pointer;
+            display: block;
+            position: relative;
+            z-index: 999;
+            transition: transform 0.1s;
+        }
+        #audioFix:active { transform: scale(0.95); }
+
+        .card { background: var(--gray); border-radius: 25px; padding: 25px; margin-bottom: 25px; }
+        input { width: 100%; border: 1.5px solid #ddd; background: #fff; padding: 15px; border-radius: 15px; margin-bottom: 12px; box-sizing: border-box; font-size: 16px; outline: none; }
         
-        /* 增加点击时的缩放动画，确认按钮被按下了 */
-        .primary-btn { width: 100%; background: var(--main); color: #fff; border: none; padding: 18px; border-radius: 18px; font-weight: bold; font-size: 18px; cursor: pointer; transition: transform 0.1s; }
-        .primary-btn:active { transform: scale(0.96); opacity: 0.9; }
-        
+        .primary-btn { width: 100%; background: var(--main); color: #fff; border: none; padding: 18px; border-radius: 18px; font-weight: bold; font-size: 18px; cursor: pointer; }
+        .primary-btn:active { opacity: 0.8; transform: scale(0.98); }
+
         .goal-item { border: 2.5px solid var(--main); border-radius: 22px; padding: 20px; margin-top: 15px; position: relative; background: #fff; display: flex; justify-content: space-between; align-items: center; }
         .goal-item.done { opacity: 0.5; background: var(--gray); border-color: transparent; }
-        .check-box { width: 34px; height: 34px; border: 2.5px solid var(--main); border-radius: 10px; display: flex; align-items: center; justify-content: center; flex-shrink: 0; transition: 0.2s; }
+        
+        .check-box { width: 34px; height: 34px; border: 2.5px solid var(--main); border-radius: 10px; display: flex; align-items: center; justify-content: center; flex-shrink: 0; }
         .done .check-box { background: var(--main); }
         .done .check-box::after { content: '✓'; color: white; font-weight: bold; font-size: 22px; }
 
-        #alarmOverlay { display: none; position: fixed; top:0; left:0; width:100%; height:100%; background: var(--red); color:white; z-index:9999; flex-direction:column; align-items:center; justify-content:center; }
-        #audioFix { background: var(--blue); color: white; text-align: center; padding: 15px; border-radius: 15px; margin-bottom: 15px; font-weight: bold; box-shadow: 0 4px 12px rgba(0,112,243,0.3); }
         .delete-btn { position: absolute; top: -10px; right: 10px; background: white; color: var(--red); font-size: 11px; font-weight: bold; border: 1.5px solid var(--red); padding: 4px 10px; border-radius: 8px; }
+
+        #alarmOverlay { display: none; position: fixed; top:0; left:0; width:100%; height:100%; background: var(--red); color:white; z-index:10000; flex-direction:column; align-items:center; justify-content:center; }
     </style>
 </head>
 <body>
 
     <div id="alarmOverlay">
-        <h2 id="alarmTitle" style="font-size: 40px; margin-bottom: 30px;">闹钟响铃</h2>
+        <h2 id="alarmTitle" style="font-size: 40px; margin: 20px;">闹钟响了</h2>
         <button onclick="stopAlarm()" style="padding:20px 60px; border-radius:50px; border:none; background:white; color:red; font-weight:bold; font-size:20px;">停止响铃</button>
     </div>
 
-    <h1 style="font-weight:900; letter-spacing:-1px;">Focus.</h1>
+    <div id="audioFix" onclick="initAudio()">第一步：点我开启闹钟声音</div>
 
-    <div id="audioFix" onclick="initAudio()">点此开启“声音权限” (必点)</div>
+    <h1 style="font-weight:900;">Focus.</h1>
 
     <div class="card">
-        <input type="text" id="gInput" placeholder="自律目标名称">
-        <input type="number" id="dInput" placeholder="计划坚持天数 (如 21)">
+        <label style="font-size: 12px; font-weight: bold; margin-bottom: 5px; display: block;">第二步：添加计划</label>
+        <input type="text" id="gInput" placeholder="输入自律目标">
+        <input type="number" id="dInput" placeholder="坚持天数 (如 21)">
         <input type="time" id="tInput" value="08:00">
-        <button class="primary-btn" id="addBtn">添加并保存计划</button>
+        <button class="primary-btn" onclick="addGoal()">保存计划</button>
     </div>
 
     <div id="list"></div>
@@ -52,50 +80,43 @@
     </audio>
 
     <script>
-        const STORE_KEY = 'focus_final_v10';
+        const STORE_KEY = 'focus_fix_v11';
         let goals = JSON.parse(localStorage.getItem(STORE_KEY)) || [];
         const audio = document.getElementById('alarmAudio');
 
-        // 1. 初始化音频权限 (点击任何地方都会尝试触发)
+        // 初始化声音权限
         function initAudio() {
             audio.play().then(() => {
                 audio.pause();
-                document.getElementById('audioFix').innerHTML = "✅ 声音权限已激活";
                 document.getElementById('audioFix').style.background = "#34c759";
-                setTimeout(()=> document.getElementById('audioFix').style.display='none', 1000);
-            }).catch(e => console.log("激活失败", e));
+                document.getElementById('audioFix').innerText = "✅ 权限已开启";
+                setTimeout(() => document.getElementById('audioFix').style.display = 'none', 1000);
+            }).catch(e => {
+                alert("权限激活失败，请再试一次");
+            });
         }
 
-        // 2. 绑定添加按钮 (改用事件监听提高兼容性)
-        document.getElementById('addBtn').addEventListener('click', function() {
+        function addGoal() {
             const title = document.getElementById('gInput').value;
             const days = document.getElementById('dInput').value;
             const time = document.getElementById('tInput').value;
 
-            if(!title || !days) {
-                alert("请填写完整信息！");
-                return;
-            }
+            if(!title || !days) return alert("请填写完整信息");
 
-            const newGoal = {
+            goals.push({
                 id: Date.now(),
                 title: title,
                 totalDays: parseInt(days),
                 startTime: new Date().setHours(0,0,0,0),
                 time: time,
                 lastCheckDate: ""
-            };
-
-            goals.push(newGoal);
+            });
             save();
-            
-            // 清空输入并给反馈
             document.getElementById('gInput').value = '';
             document.getElementById('dInput').value = '';
-            console.log("保存成功");
-        });
+        }
 
-        // 3. 闹钟核心逻辑
+        // 定时器逻辑
         setInterval(() => {
             const now = new Date();
             const timeStr = now.getHours().toString().padStart(2, '0') + ":" + now.getMinutes().toString().padStart(2, '0');
@@ -107,7 +128,7 @@
                     if (g.time === timeStr && pastDays < g.totalDays && g.lastCheckDate !== dateStr) {
                         document.getElementById('alarmTitle').innerText = g.title;
                         document.getElementById('alarmOverlay').style.display = 'flex';
-                        audio.play().catch(()=> alert("闹钟该响了，请确保开启声音权限"));
+                        audio.play().catch(() => {});
                     }
                 });
             }
@@ -116,9 +137,7 @@
         function toggleCheck(id) {
             const dateStr = new Date().toDateString();
             goals = goals.map(g => {
-                if (g.id === id) {
-                    g.lastCheckDate = (g.lastCheckDate === dateStr) ? "" : dateStr;
-                }
+                if (g.id === id) g.lastCheckDate = (g.lastCheckDate === dateStr) ? "" : dateStr;
                 return g;
             });
             save();
@@ -131,7 +150,7 @@
         }
 
         function deleteGoal(id) {
-            if(confirm("确定删除该计划吗？")) {
+            if(confirm("确定删除？")) {
                 goals = goals.filter(g => g.id !== id);
                 save();
             }
@@ -155,7 +174,7 @@
                         <div style="flex:1" onclick="toggleCheck(${g.id})">
                             <div class="goal-title">${g.title}</div>
                             <div style="font-size:12px; color:#666; margin-top:4px;">
-                                时刻：${g.time} | 剩余：${remaining > 0 ? remaining : 0}天
+                                闹钟：${g.time} | 剩余：${remaining > 0 ? remaining : 0}天
                             </div>
                         </div>
                         <div class="check-box" onclick="toggleCheck(${g.id})"></div>
