@@ -3,6 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+    <meta name="mobile-web-app-capable" content="yes">
     <title>极自律</title>
     <style>
         :root { --bg: #ffffff; --main: #000000; --gray: #f2f2f2; }
@@ -46,7 +47,6 @@
             const days = document.getElementById('targetDays').value;
             const time = document.getElementById('tInput').value;
             if(!title || !days) return alert("请填写完整");
-
             goals.push({ id: Date.now(), title, targetDays: days, currentDays: 0, time, doneToday: false });
             save();
             syncToSystem(time, title);
@@ -54,27 +54,24 @@
             document.getElementById('targetDays').value = '';
         }
 
-        // 针对小米澎湃 OS 深度优化的同步逻辑
         function syncToSystem(time, title) {
             const [h, m] = time.split(':');
-            const hInt = parseInt(h, 10);
-            const mInt = parseInt(m, 10);
-
-            // 1. 构造标准的 Intent 协议
-            const setAlarmIntent = `intent:#Intent;action=android.intent.action.SET_ALARM;i:android.intent.extra.alarm.HOUR=${hInt};i:android.intent.extra.alarm.MINUTES=${mInt};s:android.intent.extra.alarm.MESSAGE=${encodeURIComponent(title)};b:android.intent.extra.alarm.SKIP_UI=false;end`;
+            const intent = `intent:#Intent;action=android.intent.action.SET_ALARM;i:android.intent.extra.alarm.HOUR=${parseInt(h)};i:android.intent.extra.alarm.MINUTES=${parseInt(m)};s:android.intent.extra.alarm.MESSAGE=${encodeURIComponent(title)};b:android.intent.extra.alarm.SKIP_UI=false;end`;
             
-            // 2. 尝试直接跳转
-            window.location.href = setAlarmIntent;
+            // 尝试模拟用户行为跳转
+            const a = document.createElement('a');
+            a.href = intent;
+            document.body.appendChild(a);
+            a.click();
+            document.body.removeChild(a);
 
-            // 3. 容错逻辑：如果系统拦截，引导用户手动跳转
             setTimeout(() => {
                 if (!document.hidden) {
-                    if (confirm("小米系统正在拦截自动跳转。\n\n点击'确定'尝试直接开启闹钟列表，请您手动添加一个 " + time + " 的闹钟。")) {
-                        // 备用：跳转到闹钟列表页（小米系统对此协议限制较松）
-                        window.location.href = "intent://#Intent;action=android.intent.action.SHOW_ALARMS;end";
+                    if (confirm("提示：若未跳转，请点击确认手动允许跳转闹钟。")) {
+                        window.location.href = intent;
                     }
                 }
-            }, 800);
+            }, 600);
         }
 
         function toggle(id) {
@@ -89,17 +86,10 @@
         }
 
         function del(id) {
-            if(confirm("确定删除这个目标吗？")) {
-                goals = goals.filter(g => g.id !== id);
-                save();
-            }
+            if(confirm("确定删除？")) { goals = goals.filter(g => g.id !== id); save(); }
         }
 
-        function save() {
-            localStorage.setItem('my_discipline_final', JSON.stringify(goals));
-            render();
-        }
-
+        function save() { localStorage.setItem('my_discipline_final', JSON.stringify(goals)); render(); }
         function render() {
             document.getElementById('list').innerHTML = goals.map(g => `
                 <div class="goal-item ${g.doneToday ? 'done' : ''}">
@@ -110,8 +100,8 @@
                         </div>
                         <div class="check-box" onclick="toggle(${g.id})"></div>
                     </div>
-                    <button class="sync-btn" onclick="syncToSystem('${g.time}', '${g.title}')">⏰ 同步系统闹钟: ${g.time}</button>
-                    <button class="delete-link" onclick="del(${g.id})">删除目标</button>
+                    <button class="sync-btn" onclick="syncToSystem('${g.time}', '${g.title}')">⏰ 同步响铃: ${g.time}</button>
+                    <button class="delete-link" onclick="del(${g.id})">删除</button>
                 </div>
             `).reverse().join('');
         }
