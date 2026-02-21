@@ -7,7 +7,7 @@
     <style>
         :root { --bg: #ffffff; --main: #000000; --gray: #f2f2f2; }
         body { background: var(--bg); color: var(--main); font-family: sans-serif; margin: 0; padding: 20px; }
-        .card { background: var(--gray); border-radius: 24px; padding: 20px; margin-bottom: 25px; }
+        .card { background: var(--gray); border-radius: 24px; padding: 20px; margin-bottom: 25px; letter-spacing: -0.5px; }
         h1 { font-size: 32px; font-weight: 900; margin-bottom: 25px; letter-spacing: -1px; }
         label { display: block; font-size: 12px; margin: 10px 0 5px 10px; font-weight: bold; }
         input { width: 100%; border: none; background: #fff; padding: 15px; border-radius: 15px; margin-bottom: 12px; box-sizing: border-box; font-size: 16px; outline: none; }
@@ -54,22 +54,28 @@
             document.getElementById('targetDays').value = '';
         }
 
-        // 适配小米 14T Pro 澎湃 OS 的同步函数
+        // 针对小米 14T Pro 深度优化的同步函数
         function syncToSystem(time, title) {
-            const parts = time.split(':');
-            const h = parseInt(parts[0], 10);
-            const m = parseInt(parts[1], 10);
-
-            // 移除干扰逻辑，只发送最核心的闹钟指令
-            const intent = `intent:#Intent;action=android.intent.action.SET_ALARM;` +
-                           `i:android.intent.extra.alarm.HOUR=${h};` +
-                           `i:android.intent.extra.alarm.MINUTES=${m};` +
-                           `s:android.intent.extra.alarm.MESSAGE=${encodeURIComponent(title)};` +
-                           `b:android.intent.extra.alarm.SKIP_UI=false;` +
-                           `end`;
+            const [h, m] = time.split(':');
+            const intent = `intent:#Intent;action=android.intent.action.SET_ALARM;i:android.intent.extra.alarm.HOUR=${parseInt(h)};i:android.intent.extra.alarm.MINUTES=${parseInt(m)};s:android.intent.extra.alarm.MESSAGE=${encodeURIComponent(title)};b:android.intent.extra.alarm.SKIP_UI=false;end`;
             
-            // 直接调起，让系统决定是否弹出询问框
-            window.location.href = intent;
+            // 1. 尝试通过“模拟点击”穿透权限
+            const a = document.createElement('a');
+            a.href = intent;
+            a.rel = 'external nofollow';
+            document.body.appendChild(a);
+            a.click();
+            document.body.removeChild(a);
+
+            // 2. 备用方案：如果模拟点击被静默拦截，500ms 后引导用户确认
+            // 手动点击对话框的“确定”在小米系统里权重最高
+            setTimeout(() => {
+                if (!document.hidden) {
+                    if (confirm("正在尝试同步到系统闹钟，若未跳转请点击确定手动授权。")) {
+                        window.location.href = intent;
+                    }
+                }
+            }, 500);
         }
 
         function toggle(id) {
@@ -105,7 +111,7 @@
                         </div>
                         <div class="check-box" onclick="toggle(${g.id})"></div>
                     </div>
-                    <button class="sync-btn" onclick="syncToSystem('${g.time}', '${g.title}')">⏰ 同步系统响铃: ${g.time}</button>
+                    <button class="sync-btn" onclick="syncToSystem('${g.time}', '${g.title}')">⏰ 同步系统闹钟: ${g.time}</button>
                     <button class="delete-link" onclick="del(${g.id})">删除目标</button>
                 </div>
             `).reverse().join('');
