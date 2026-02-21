@@ -6,12 +6,16 @@
     <title>极简自律</title>
     
     <meta name="mobile-web-app-capable" content="yes">
-    <link rel="manifest" href="data:application/manifest+json,{'name':'极简自律','short_name':'自律','start_url':'.','display':'standalone','background_color':'#ffffff','theme_color':'#000000'}">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <meta name="application-name" content="极简自律">
+    <meta name="description" content="一个简单的自律打卡应用">
+    
+    <link rel="manifest" href='data:application/manifest+json,{"name":"极简自律","short_name":"自律","description":"自律闹钟打卡","start_url":".","display":"standalone","background_color":"#ffffff","theme_color":"#000000","icons":[{"src":"https://cdn-icons-png.flaticon.com/512/3587/3587210.png","sizes":"512x512","type":"image/png"}]}'>
 
     <style>
         :root { --bg: #ffffff; --main: #000000; --gray: #f2f2f2; }
-        body { background: var(--bg); color: var(--main); font-family: sans-serif; margin: 0; padding: env(safe-area-inset-top) 20px 20px 20px; }
-        .card { background: var(--gray); border-radius: 28px; padding: 25px; margin-bottom: 25px; }
+        body { background: var(--bg); color: var(--main); font-family: -apple-system, sans-serif; margin: 0; padding: env(safe-area-inset-top) 20px 20px 20px; }
+        .card { background: var(--gray); border-radius: 28px; padding: 25px; margin-bottom: 25px; box-shadow: 0 4px 12px rgba(0,0,0,0.05); }
         h1 { font-size: 38px; font-weight: 900; margin-bottom: 30px; letter-spacing: -1.5px; }
         label { display: block; font-size: 13px; margin: 10px 0 8px 10px; font-weight: 600; opacity: 0.6; }
         input { width: 100%; border: 1px solid #ddd; background: #fff; padding: 18px; border-radius: 20px; margin-bottom: 15px; box-sizing: border-box; font-size: 16px; outline: none; }
@@ -55,10 +59,9 @@
 
         function syncToSystem(time, title) {
             const [h, m] = time.split(':');
-            // App 模式下，这个 Intent 协议会直接触达系统底层
             const intent = `intent:#Intent;action=android.intent.action.SET_ALARM;i:android.intent.extra.alarm.HOUR=${parseInt(h)};i:android.intent.extra.alarm.MINUTES=${parseInt(m)};s:android.intent.extra.alarm.MESSAGE=${encodeURIComponent(title)};b:android.intent.extra.alarm.SKIP_UI=false;end`;
             
-            if (confirm("是否立即同步到闹钟？")) {
+            if (confirm("正在尝试同步到系统闹钟，若未跳转请点确定。")) {
                 window.location.href = intent;
             }
         }
