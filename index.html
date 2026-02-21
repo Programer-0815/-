@@ -3,11 +3,11 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
-    <title>自律</title>
+    <title>极自律</title>
     <style>
         :root { --bg: #ffffff; --main: #000000; --gray: #f2f2f2; }
         body { background: var(--bg); color: var(--main); font-family: sans-serif; margin: 0; padding: 20px; }
-        .card { background: var(--gray); border-radius: 24px; padding: 20px; margin-bottom: 25px; letter-spacing: -0.5px; }
+        .card { background: var(--gray); border-radius: 24px; padding: 20px; margin-bottom: 25px; }
         h1 { font-size: 32px; font-weight: 900; margin-bottom: 25px; letter-spacing: -1px; }
         label { display: block; font-size: 12px; margin: 10px 0 5px 10px; font-weight: bold; }
         input { width: 100%; border: none; background: #fff; padding: 15px; border-radius: 15px; margin-bottom: 12px; box-sizing: border-box; font-size: 16px; outline: none; }
@@ -27,7 +27,7 @@
     <h1>Focus.</h1>
 
     <div class="card">
-        <label>目标</label>
+        <label>自律目标</label>
         <input type="text" id="gInput" placeholder="写下你的目标...">
         <label>计划天数</label>
         <input type="number" id="targetDays" placeholder="例如：21">
@@ -54,28 +54,27 @@
             document.getElementById('targetDays').value = '';
         }
 
-        // 针对小米 14T Pro 深度优化的同步函数
+        // 针对小米澎湃 OS 深度优化的同步逻辑
         function syncToSystem(time, title) {
             const [h, m] = time.split(':');
-            const intent = `intent:#Intent;action=android.intent.action.SET_ALARM;i:android.intent.extra.alarm.HOUR=${parseInt(h)};i:android.intent.extra.alarm.MINUTES=${parseInt(m)};s:android.intent.extra.alarm.MESSAGE=${encodeURIComponent(title)};b:android.intent.extra.alarm.SKIP_UI=false;end`;
-            
-            // 1. 尝试通过“模拟点击”穿透权限
-            const a = document.createElement('a');
-            a.href = intent;
-            a.rel = 'external nofollow';
-            document.body.appendChild(a);
-            a.click();
-            document.body.removeChild(a);
+            const hInt = parseInt(h, 10);
+            const mInt = parseInt(m, 10);
 
-            // 2. 备用方案：如果模拟点击被静默拦截，500ms 后引导用户确认
-            // 手动点击对话框的“确定”在小米系统里权重最高
+            // 1. 构造标准的 Intent 协议
+            const setAlarmIntent = `intent:#Intent;action=android.intent.action.SET_ALARM;i:android.intent.extra.alarm.HOUR=${hInt};i:android.intent.extra.alarm.MINUTES=${mInt};s:android.intent.extra.alarm.MESSAGE=${encodeURIComponent(title)};b:android.intent.extra.alarm.SKIP_UI=false;end`;
+            
+            // 2. 尝试直接跳转
+            window.location.href = setAlarmIntent;
+
+            // 3. 容错逻辑：如果系统拦截，引导用户手动跳转
             setTimeout(() => {
                 if (!document.hidden) {
-                    if (confirm("正在尝试同步到系统闹钟，若未跳转请点击确定手动授权。")) {
-                        window.location.href = intent;
+                    if (confirm("小米系统正在拦截自动跳转。\n\n点击'确定'尝试直接开启闹钟列表，请您手动添加一个 " + time + " 的闹钟。")) {
+                        // 备用：跳转到闹钟列表页（小米系统对此协议限制较松）
+                        window.location.href = "intent://#Intent;action=android.intent.action.SHOW_ALARMS;end";
                     }
                 }
-            }, 500);
+            }, 800);
         }
 
         function toggle(id) {
