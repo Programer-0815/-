@@ -5,44 +5,58 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no, viewport-fit=cover">
     <title>Focus Pro</title>
     <style>
-        :root { --bg: #ffffff; --main: #000000; --gray: #f2f2f2; --red: #ff3b30; --blue: #007aff; --green: #34c759; }
+        :root { --bg: #ffffff; --main: #000000; --gray: #f6f6f6; --red: #ff3b30; --blue: #007aff; }
         body { background: var(--bg); color: var(--main); font-family: -apple-system, sans-serif; margin: 0; padding: 20px; padding-top: calc(env(safe-area-inset-top) + 20px); -webkit-tap-highlight-color: transparent; }
         
-        /* 顶部激活层：覆盖全屏确保能点到 */
-        #audioLayer { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,122,255,0.9); color: white; z-index: 10001; display: flex; flex-direction: column; align-items: center; justify-content: center; text-align: center; cursor: pointer; }
-        
-        .card { background: var(--gray); border-radius: 25px; padding: 25px; margin-bottom: 25px; }
+        /* 启动激活层 */
+        #audioLayer { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: var(--main); color: white; z-index: 10001; display: flex; flex-direction: column; align-items: center; justify-content: center; text-align: center; }
+        .start-btn { background: var(--blue); color: white; border: none; padding: 20px 40px; border-radius: 50px; font-size: 18px; font-weight: bold; margin-top: 20px; box-shadow: 0 10px 20px rgba(0,122,255,0.4); }
+
+        /* 响铃全屏层 */
+        #alarmOverlay { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: var(--red); color: white; z-index: 10000; flex-direction: column; align-items: center; justify-content: center; }
+        .stop-btn { margin-top: 50px; padding: 20px 60px; border-radius: 50px; border: none; background: white; color: var(--red); font-weight: 900; font-size: 22px; }
+
+        /* 列表卡片 */
+        .card { background: var(--gray); border-radius: 25px; padding: 20px; margin-bottom: 25px; }
         input { width: 100%; border: 1.5px solid #ddd; background: #fff; padding: 15px; border-radius: 15px; margin-bottom: 12px; box-sizing: border-box; font-size: 16px; outline: none; }
         .primary-btn { width: 100%; background: var(--main); color: #fff; border: none; padding: 18px; border-radius: 18px; font-weight: bold; font-size: 18px; }
-        
-        .goal-item { border: 2.5px solid var(--main); border-radius: 22px; padding: 20px; margin-top: 15px; position: relative; background: #fff; display: flex; justify-content: space-between; align-items: center; }
-        .goal-item.done { opacity: 0.5; background: var(--gray); border-color: transparent; }
-        .check-box { width: 34px; height: 34px; border: 2.5px solid var(--main); border-radius: 10px; display: flex; align-items: center; justify-content: center; }
-        .done .check-box { background: var(--main); }
-        .done .check-box::after { content: '✓'; color: white; font-weight: bold; font-size: 22px; }
-        .delete-btn { position: absolute; top: -10px; right: 10px; background: white; color: var(--red); font-size: 11px; font-weight: bold; border: 1.5px solid var(--red); padding: 4px 10px; border-radius: 8px; }
 
-        #alarmOverlay { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: var(--red); color: white; z-index: 10000; flex-direction: column; align-items: center; justify-content: center; }
+        .goal-item { border: 2.5px solid var(--main); border-radius: 22px; padding: 20px; margin-top: 15px; position: relative; background: #fff; display: flex; align-items: center; }
+        .goal-item.done { opacity: 0.4; background: #fafafa; border-color: #ddd; }
+        .goal-info { flex: 1; }
+        .goal-title { font-size: 20px; font-weight: 900; }
+        .goal-meta { font-size: 12px; color: #666; margin-top: 4px; }
+        
+        .check-box { width: 34px; height: 34px; border: 2.5px solid var(--main); border-radius: 12px; margin-left: 15px; display: flex; align-items: center; justify-content: center; flex-shrink: 0; }
+        .done .check-box { background: var(--main); border-color: var(--main); }
+        .done .check-box::after { content: '✓'; color: white; font-weight: bold; font-size: 22px; }
+        
+        .delete-btn { position: absolute; top: -10px; right: 10px; background: white; color: var(--red); font-size: 11px; font-weight: bold; border: 1.5px solid var(--red); padding: 3px 8px; border-radius: 8px; }
     </style>
 </head>
 <body>
 
-    <div id="audioLayer" onclick="unlockAudio()">
-        <div style="font-size: 60px;">🔊</div>
-        <h2 style="margin: 20px;">点击屏幕任意位置</h2>
-        <p>开启闹钟声音并进入 App</p>
+    <div id="audioLayer">
+        <div style="font-size: 50px;">🎯</div>
+        <h2 style="margin-top:20px;">欢迎回来</h2>
+        <p style="opacity:0.7;">点击下方按钮开启自律的一天</p>
+        <button class="start-btn" onclick="unlockAudio()">开启 Focus</button>
     </div>
 
     <div id="alarmOverlay">
-        <h1 id="alarmTitle" style="font-size: 40px;">时间到！</h1>
-        <button onclick="stopAlarm()" style="margin-top:40px; padding:20px 60px; border-radius:50px; border:none; background:white; color:red; font-weight:bold; font-size:20px;">停止响铃</button>
+        <div style="font-size: 60px; animation: shake 0.5s infinite;">⏰</div>
+        <h1 id="alarmTitle" style="font-size: 45px; margin-top:20px;">时间到！</h1>
+        <button class="stop-btn" onclick="stopAlarm()">停止响铃</button>
     </div>
 
-    <h1 style="font-weight:900;">Focus.</h1>
+    <h1 style="font-weight:900; letter-spacing:-1.5px;">Focus.</h1>
 
     <div class="card">
-        <input type="text" id="gInput" placeholder="自律目标">
-        <input type="number" id="dInput" placeholder="天数">
+        <label style="font-size:12px; font-weight:bold; opacity:0.5; margin-left:10px;">目标</label>
+        <input type="text" id="gInput" placeholder="写下你的计划...">
+        <label style="font-size:12px; font-weight:bold; opacity:0.5; margin-left:10px;">持续天数</label>
+        <input type="number" id="dInput" placeholder="21">
+        <label style="font-size:12px; font-weight:bold; opacity:0.5; margin-left:10px;">响铃时刻</label>
         <input type="time" id="tInput" value="08:00">
         <button class="primary-btn" onclick="addGoal()">添加计划</button>
     </div>
@@ -51,33 +65,31 @@
 
     <audio id="alarmAudio" loop preload="auto">
         <source src="https://assets.mixkit.co/active_storage/sfx/2869/2869-preview.mp3" type="audio/mpeg">
-        <source src="https://nx-music.oss-cn-beijing.aliyuncs.com/alarm.mp3" type="audio/mpeg">
     </audio>
 
     <script>
-        const STORE_KEY = 'focus_pro_v12';
+        const STORE_KEY = 'focus_final_ultimate';
         let goals = JSON.parse(localStorage.getItem(STORE_KEY)) || [];
         const audio = document.getElementById('alarmAudio');
 
-        // 1. 核心：解锁音频权限
+        // 1. 静默解锁音频权限
         function unlockAudio() {
-            // 尝试播放并立即暂停，解锁浏览器策略
+            audio.volume = 0; // 先静音
             audio.play().then(() => {
                 audio.pause();
-                audio.currentTime = 0;
+                audio.volume = 1; // 恢复音量
                 document.getElementById('audioLayer').style.display = 'none';
-                console.log("Audio Unlocked");
-            }).catch(err => {
-                console.error("Unlock failed", err);
+            }).catch(e => {
+                document.getElementById('audioLayer').innerText = "请再次点击重试";
             });
         }
 
-        // 2. 添加逻辑 (保留打勾、删除、时间限制)
+        // 2. 添加计划
         function addGoal() {
             const title = document.getElementById('gInput').value;
             const days = document.getElementById('dInput').value;
             const time = document.getElementById('tInput').value;
-            if(!title || !days) return alert("请填写完整");
+            if(!title || !days) return alert("请填写完整信息");
 
             goals.push({
                 id: Date.now(),
@@ -91,7 +103,7 @@
             document.getElementById('gInput').value = '';
         }
 
-        // 3. 监控闹钟 (支持后台运行逻辑)
+        // 3. 闹钟监测引擎
         setInterval(() => {
             const now = new Date();
             const timeStr = now.getHours().toString().padStart(2, '0') + ":" + now.getMinutes().toString().padStart(2, '0');
@@ -102,6 +114,7 @@
                     const pastDays = Math.floor((now.getTime() - g.startTime) / (1000*60*60*24));
                     const isDoneToday = g.lastCheckDate === dateStr;
 
+                    // 满足时间、未过期、今天未打卡，则响铃
                     if (g.time === timeStr && pastDays < g.totalDays && !isDoneToday) {
                         triggerAlarm(g.title);
                     }
@@ -113,14 +126,7 @@
             document.getElementById('alarmTitle').innerText = title;
             document.getElementById('alarmOverlay').style.display = 'flex';
             audio.currentTime = 0;
-            // 尝试多次播放防止静音策略
-            let playPromise = audio.play();
-            if (playPromise !== undefined) {
-                playPromise.catch(() => {
-                    // 如果被拦截，引导用户点击停止响铃按钮来强制出声
-                    console.log("Play interrupted");
-                });
-            }
+            audio.play().catch(e => console.log("播报被系统拦截"));
         }
 
         function stopAlarm() {
@@ -128,7 +134,7 @@
             document.getElementById('alarmOverlay').style.display = 'none';
         }
 
-        // 4. 其他功能逻辑
+        // 4. 打卡与删除逻辑
         function toggleCheck(id) {
             const dateStr = new Date().toDateString();
             goals = goals.map(g => {
@@ -139,7 +145,7 @@
         }
 
         function deleteGoal(id) {
-            if(confirm("确定删除？")) {
+            if(confirm("确定要删除这个计划吗？")) {
                 goals = goals.filter(g => g.id !== id);
                 save();
             }
@@ -160,9 +166,9 @@
                 return `
                     <div class="goal-item ${isDoneToday ? 'done' : ''}">
                         <div class="delete-btn" onclick="deleteGoal(${g.id})">删除</div>
-                        <div style="flex:1" onclick="toggleCheck(${g.id})">
+                        <div class="goal-info" onclick="toggleCheck(${g.id})">
                             <div class="goal-title">${g.title}</div>
-                            <div style="font-size:12px; color:#666;">时刻：${g.time} | 剩 ${remaining > 0 ? remaining : 0} 天</div>
+                            <div class="goal-meta">提醒：${g.time} | 剩余：${remaining > 0 ? remaining : 0} 天</div>
                         </div>
                         <div class="check-box" onclick="toggleCheck(${g.id})"></div>
                     </div>
@@ -171,5 +177,14 @@
         }
         render();
     </script>
+
+    <style>
+        @keyframes shake {
+            0% { transform: rotate(0deg); }
+            25% { transform: rotate(10deg); }
+            75% { transform: rotate(-10deg); }
+            100% { transform: rotate(0deg); }
+        }
+    </style>
 </body>
 </html>
